@@ -1,0 +1,26 @@
+version: 0.2
+
+
+phases:
+ 
+  pre_build:
+    commands:
+      - docker --version
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $region | docker login --username AWS --password-stdin $account_id.dkr.ecr.$region.amazonaws.com
+  build:
+    commands:
+      - docker pull $account_id.dkr.ecr.$region.amazonaws.com/$ecr_repo:$ecr_tag
+      - docker images
+      - docker run --name container $account_id.dkr.ecr.$region.amazonaws.com/$ecr_repo:$ecr_tag robot test.robot
+      - pwd
+      - docker cp container:/app/log.html .
+      - docker cp container:/app/output.xml .
+      - docker cp container:/app/report.html .
+ 
+artifacts:
+  files:
+     - log.html
+     - output.xml
+     - report.html
+  name: $(date +%Y-%m-%d)
